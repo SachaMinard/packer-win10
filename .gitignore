@@ -1,16 +1,213 @@
-# Cache objects
+# MacOS
+## Ignore desktop services files.
+/.DS_Store
+# Certificates and Keys
+## Ignore certificates files.
+/.cer
+**/.crt
+/*.p7b
+## Ignore public key files
+/.pub
+# HashiCorp Packer
+## Ignore cache directories.
 packer_cache/
+## Ignore crash log files.
+crash.log
+# HashiCorp Terraform
+## Ignore .terraform directories.
+**/.terraform/
+## Ignore dependency lock files.
+.terraform.lock.hcl
+## Ignore .tfstate files
+*.tfstate
+.tfstate.
+## Ignore crash.log files.
+crash.log
+crash.*.log
+## Ignore .tfvars files.
+*.tfvars
+*.tfvars.json
+## Ignore override files.
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+## Ignore tfplan files.
+tfplan
+## Ignore configuration files.
+.terraformrc
+terraform.rc
+# Artifacts
+## Ignore artifacts directory.
+artifacts//*.mf
+artifacts//.nvram
+artifacts/**/.ovf
+artifacts/*/.vmdk
+# Manifests
+## Ignore manifests directory.
+manifests/*.json
+# Trunk.io
+## Ignore trunk directory.
+.trunk/actions
+.trunk/logs
+.trunk/notifications
+.trunk/out
+.trunk/plugins/trunk
+.trunk/trunk.yaml
+# Python virtual environments
+## Ignore venv directory.
+venv/
+# MkDocs documentation
+## Ignore site directory.
+.site/
+# Static credentials
+.credentials
+.pem
+*.key
 
-# Crash log
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# =============================================================================
+# SÉCURITÉ - Fichiers contenant des secrets (NE JAMAIS VERSIONNER)
+# =============================================================================
+
+# Credentials et secrets
+.credentials
+*.credentials
+.env
+*.env
+.env.*
+.env_tmp
+!.env.example
+!.env.template
+
+# Sessions Bitwarden temporaires
+.bw_session_tmp
+.bw_session
+*.session
+
+# Logs pouvant contenir des informations sensibles
+*.log
+logs/
+*.log.*
+packer.log
+Packer.log
+
+# Fichiers temporaires avec credentials
+/tmp/
+temp/
+.tmp/
+
+# Certificats et clés
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*.der
+
+# =============================================================================
+# PACKER - Fichiers générés
+# =============================================================================
+
+# Packer Cache
+packer_cache/
+.packer_cache/
+
+# Packer Logs
 crash.log
 
-# https://www.packer.io/guides/hcl/variables
-# Exclude all .pkrvars.hcl files, which are likely to contain sensitive data, 
-# such as password, private keys, and other secrets. These should not be part of 
-# version control as they are data points which are potentially sensitive and 
-# subject to change depending on the environment.
-#
-*.pkrvars.hcl
+# Packer Builds
+builds/
 
-# For built boxes
-*.box
+# Packer Plugins
+plugins/
+
+## Ignore certificate and key files
+certs/
+
+# Static credentials
+.credentials
+*.credentials
+
+# Passwords
+*.pass
+*.passwd
+
+## Credentials for Cloud Environments
+.credentials
+
+# Build Variables
+builds.*
+*.auto.pkrvars.hcl
+
+# =============================================================================
+# MAKE ET BUILD
+# =============================================================================
+
+# Fichiers temporaires Makefile
+*.tmp
+.make_*
+
+# =============================================================================
+# OS et IDE
+# =============================================================================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Linux
+.directory
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Fichiers d'environnement sensibles
+.env
+.bitwarden_ids
+
+# Fichiers temporaires Bitwarden
+.bw_session_tmp
+.env_tmp
+
+# Cache et logs Packer
+.packer_cache/
+*.log
+packer_cache/
+
+# Artefacts de build
+build/
+output/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+
+# Note: .env.gpg est chiffré donc peut être committé si souhaité
+# Décommentez la ligne suivante si vous ne voulez pas le committer:
+# .env.gpg

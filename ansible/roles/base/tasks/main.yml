@@ -1,0 +1,10 @@
+---
+# Tâches principales du rôle base
+
+- name: Installer les mises à jour Windows
+  block:
+    - name: Charger les variables pour les mises à jour Windows
+      include_vars:
+        file: windows_updates_vars.yml
+    - name: Exécuter les tâches pour les mises à jour Windows
+      include_tasks: windows_update.yml

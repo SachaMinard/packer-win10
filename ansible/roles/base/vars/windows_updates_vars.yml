@@ -1,0 +1,65 @@
+---
+# Variables pour l'installation des mises à jour Windows
+# Configuration pour les mises à jour directes sans WSUS
+
+# Répertoire des logs pour les mises à jour
+logs_path: C:\Windows\Temp
+
+# Options générales pour les mises à jour
+install_updates: true                    # Activer l'installation des mises à jour
+install_optional_updates: false         # Installer les mises à jour facultatives
+reboot_if_required: true                 # Redémarrer automatiquement si nécessaire
+reboot_timeout: 3600                     # Timeout de redémarrage en secondes (1 heure)
+
+# Catégories de mises à jour à installer
+update_categories:
+  critical_and_security:
+    - SecurityUpdates                    # Mises à jour de sécurité
+    - CriticalUpdates                    # Mises à jour critiques
+    - UpdateRollups                      # Rollups de mises à jour
+  optional:
+    - Updates                            # Mises à jour facultatives
+    - DefinitionUpdates                  # Mises à jour de définitions
+  drivers:
+    - Drivers                            # Pilotes
+
+# Configuration avancée Windows Update
+windows_update_config:
+  use_microsoft_update: true             # Utiliser Microsoft Update
+  auto_download: true                    # Téléchargement automatique
+  detection_frequency_hours: 22          # Fréquence de détection (heures)
+  install_during_auto_shutdown: true     # Installer lors de l'arrêt
+  schedule_install_day: 0                # 0=Tous les jours, 1=Dimanche, etc.
+  schedule_install_time: 3               # Heure d'installation (0-23)
+
+# Options de filtrage des mises à jour
+update_filters:
+  exclude_kbs: []                        # Liste des KB à exclure (ex: ['KB4056892'])
+  include_hidden: false                  # Inclure les mises à jour masquées
+  server_selection: 2                    # 0=Default, 1=ManagedServer, 2=WindowsUpdate, 3=Others
+
+# Configuration des services Windows Update
+windows_update_services:
+  wuauserv:                              # Service Windows Update
+    state: started
+    start_mode: auto
+  bits:                                  # Service de transfert intelligent en arrière-plan
+    state: started
+    start_mode: auto
+  cryptsvc:                              # Service de chiffrement
+    state: started
+    start_mode: auto
+
+# Paramètres de retry et timeout
+retry_settings:
+  max_retries: 3                         # Nombre maximum de tentatives
+  retry_delay: 300                       # Délai entre les tentatives (secondes)
+  download_timeout: 1800                 # Timeout de téléchargement (30 minutes)
+  install_timeout: 3600                  # Timeout d'installation (1 heure)
+
+# Notifications et rapports
+notifications:
+  enable_logging: true                   # Activer la journalisation détaillée
+  log_level: info                        # Niveau de log (debug, info, warning, error)
+  send_report: false                     # Envoyer un rapport par email
+  report_email: ""                       # Adresse email pour les rapports 

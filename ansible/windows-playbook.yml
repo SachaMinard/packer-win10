@@ -1,0 +1,55 @@
+---
+# Playbook principal pour la configuration Windows via Ansible
+# Ce playbook est exécuté par Packer après l'installation de base
+
+- name: Configuration Windows post-installation
+  hosts: all
+  gather_facts: true
+  become: false
+  vars:
+    # Configuration WinRM compatible avec Packer
+    # Les variables de connexion sont passées par Packer via extra_arguments
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: basic
+    ansible_winrm_scheme: https
+
+  pre_tasks:
+    - name: Attendre que WinRM soit disponible
+      ansible.windows.win_wait_for_connection:
+        timeout: 300
+        delay: 5
+
+    - name: Vérifier la connectivité
+      ansible.windows.win_ping:
+
+    - name: Afficher les informations système
+      ansible.builtin.debug:
+        msg: |
+          Système: {{ ansible_os_name }}
+          Version: {{ ansible_os_version }}
+          Architecture: {{ ansible_architecture }}
+          Utilisateur: {{ ansible_user }}
+          Port WinRM: {{ ansible_port }}
+
+  roles:
+    - role: base
+      tags: ['base', 'windows-updates']
+
+  post_tasks:
+    - name: Afficher le résumé de la configuration
+      ansible.builtin.debug:
+        msg: |
+          Configuration Ansible terminée avec succès !
+          
+          Composants configurés :
+          - Mises à jour Windows installées
+          - Services système configurés
+          - Configuration de base appliquée
+          
+          La machine est maintenant prête pour l'utilisation.
+
+    - name: Créer un fichier de marqueur de fin
+      ansible.windows.win_file:
+        path: C:\Windows\Temp\ansible-config-complete.txt
+        state: touch

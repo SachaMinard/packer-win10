@@ -1,0 +1,7 @@
+---
+# Handlers pour le rôle base
+
+- name: restart windows update service
+  ansible.windows.win_service:
+    name: wuauserv
+    state: restarted 

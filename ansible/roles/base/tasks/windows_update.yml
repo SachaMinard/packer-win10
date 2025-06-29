@@ -1,0 +1,112 @@
+---
+# Installation des mises à jour Windows sans WSUS
+
+- name: Vérifier la connectivité Internet
+  ansible.windows.win_ping:
+  register: connectivity_check
+
+- name: Démarrer les services Windows Update requis
+  ansible.windows.win_service:
+    name: "{{ item.key }}"
+    state: "{{ item.value.state }}"
+    start_mode: "{{ item.value.start_mode }}"
+  loop: "{{ windows_update_services | dict2items }}"
+  when: windows_update_services is defined
+
+- name: Configurer Windows Update pour utiliser Microsoft Update
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+    name: UseWUServer
+    data: 0
+    type: dword
+  when: windows_update_config.use_microsoft_update | default(true)
+  notify: restart windows update service
+
+- name: Configurer la fréquence de détection des mises à jour
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+    name: DetectionFrequency
+    data: "{{ windows_update_config.detection_frequency_hours | default(22) }}"
+    type: dword
+  when: windows_update_config.detection_frequency_hours is defined
+
+- name: Rechercher et installer les mises à jour critiques et de sécurité
+  ansible.windows.win_updates:
+    category_names: "{{ update_categories.critical_and_security }}"
+    state: installed
+    log_path: "{{ logs_path }}/win_updates_critical.log"
+    reboot: "{{ reboot_if_required | default(true) }}"
+    reboot_timeout: "{{ reboot_timeout | default(3600) }}"
+    server_selection: "{{ update_filters.server_selection | default(2) }}"
+    reject_list: "{{ update_filters.exclude_kbs | default([]) }}"
+  register: critical_update_result
+  retries: "{{ retry_settings.max_retries | default(3) }}"
+  delay: "{{ retry_settings.retry_delay | default(300) }}"
+  when: install_updates | default(true)
+
+- name: Afficher le résultat des mises à jour critiques
+  ansible.builtin.debug:
+    var: critical_update_result
+    verbosity: "{{ 1 if notifications.log_level == 'info' else 2 }}"
+  when: 
+    - notifications.enable_logging | default(true)
+    - critical_update_result is defined
+
+- name: Installer les mises à jour facultatives
+  ansible.windows.win_updates:
+    category_names: "{{ update_categories.optional }}"
+    state: installed
+    log_path: "{{ logs_path }}/win_updates_optional.log"
+    reboot: false
+    server_selection: "{{ update_filters.server_selection | default(2) }}"
+    reject_list: "{{ update_filters.exclude_kbs | default([]) }}"
+  register: optional_update_result
+  retries: "{{ retry_settings.max_retries | default(3) }}"
+  delay: "{{ retry_settings.retry_delay | default(300) }}"
+  when: install_optional_updates | default(false)
+
+- name: Afficher le résultat des mises à jour facultatives
+  ansible.builtin.debug:
+    var: optional_update_result
+    verbosity: "{{ 1 if notifications.log_level == 'info' else 2 }}"
+  when: 
+    - notifications.enable_logging | default(true)
+    - optional_update_result is defined
+    - install_optional_updates | default(false)
+
+- name: Installer les pilotes si demandé
+  ansible.windows.win_updates:
+    category_names: "{{ update_categories.drivers }}"
+    state: installed
+    log_path: "{{ logs_path }}/win_updates_drivers.log"
+    reboot: false
+    server_selection: "{{ update_filters.server_selection | default(2) }}"
+  register: drivers_update_result
+  retries: "{{ retry_settings.max_retries | default(3) }}"
+  delay: "{{ retry_settings.retry_delay | default(300) }}"
+  when: 
+    - update_categories.drivers is defined
+    - install_updates | default(true)
+
+- name: Vérifier si un redémarrage est nécessaire
+  ansible.windows.win_reboot_pending:
+  register: reboot_pending
+
+- name: Redémarrer si nécessaire après toutes les mises à jour
+  ansible.windows.win_reboot:
+    reboot_timeout: "{{ reboot_timeout | default(3600) }}"
+    msg: "Redémarrage pour finaliser l'installation des mises à jour Windows"
+    test_command: "whoami"
+  when: 
+    - reboot_pending.reboot_pending
+    - reboot_if_required | default(true)
+
+- name: Créer un rapport de mise à jour
+  ansible.builtin.template:
+    src: update_report.txt.j2
+    dest: "{{ logs_path }}/windows_update_report.txt"
+  vars:
+    critical_updates: "{{ critical_update_result | default({}) }}"
+    optional_updates: "{{ optional_update_result | default({}) }}"
+    driver_updates: "{{ drivers_update_result | default({}) }}"
+  when: notifications.enable_logging | default(true) 
